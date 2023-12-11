@@ -1,0 +1,4 @@
+/Users/antonrasoha/Library/Android/sdk/cmake/3.22.1/bin/ninja \
+  -C \
+  /Users/antonrasoha/Documents/Work/android/uvcCameraTest/compose-uvc-camera-main/opencv/.cxx/RelWithDebInfo/2r704o68/arm64-v8a \
+  opencv_jni_shared

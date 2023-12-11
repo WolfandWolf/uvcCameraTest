@@ -12,6 +12,8 @@ import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import android.util.Size
@@ -39,6 +41,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.common.internal.ImageUtils
 import com.google.mlkit.vision.text.TextRecognition
@@ -209,16 +212,53 @@ fun rememberCameraClient(context: Context): CameraClient = remember {
 @Composable
 fun MyApp() {
     val context = LocalContext.current
-    OpenCVLoader.initDebug()
+
     val model = remember {
         CameraPreviewModel()
     }
+    OpenCVLoader.initDebug()
+
+    val cameraClient = rememberCameraClient(context)
     val mediaPlayer = MediaPlayer.create(context, model.warningSound)
-    Box(modifier = Modifier.fillMaxWidth()) {
-        UVCCameraPreview(rememberCameraClient(context), model)
+    mediaPlayer.isLooping = true
+
+    Column(
+        verticalArrangement = Arrangement.SpaceBetween,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        Box() {
+            UVCCameraPreview(cameraClient, model)
+        }
+        Spacer(
+            modifier = Modifier
+                .height(50.dp)
+        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceAround,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            SoundMuteButton(icon = model.soundIcon) {
+                model.soundMuted = !model.soundMuted
+            }
+            Button(
+                onClick = {
+                captureImage(cameraClient, context, model)
+                }
+            ) {
+                Text("Take Picture")
+            }
+            IndicatorView(
+                color = model.warningColor
+            )
+        }
     }
-    WarningStatus(model, mediaPlayer, context)
+    WarningStatus(model, mediaPlayer)
 }
+
 
 @Composable
 fun UVCCameraPreview(cameraClient: CameraClient, model: CameraPreviewModel) {
@@ -235,6 +275,7 @@ fun UVCCameraPreview(cameraClient: CameraClient, model: CameraPreviewModel) {
                                 }
                                 model.imageData = data
                                 imgTextDetect(model)
+                                opencvHandler(model.imageData)
                             }
                         })
                     }
@@ -253,44 +294,43 @@ fun UVCCameraPreview(cameraClient: CameraClient, model: CameraPreviewModel) {
             }
         }
     )
-    val currentContext = LocalContext.current
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Bottom,
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ){
-        Button(
-            onClick = {
-                captureImage(cameraClient, currentContext, model)
-            }
-        ) {
-            Text("Take Picture")
-        }
+}
+
+@Composable
+fun SoundMuteButton(icon: Int, function: () -> Unit) {
+    IconButton(
+        onClick = function,
+        modifier = Modifier
+            .padding(10.dp)
+            .size(25.dp)
+    ) {
+        Icon(
+            painterResource(id = icon),
+            contentDescription = null,
+            modifier = Modifier
+        )
     }
 }
 
 // if recognize 5 symbols -> green color
 @Composable
-fun WarningStatus(model: CameraPreviewModel, mediaPlayer: MediaPlayer, context: Context) {
-    IndicatorView(color = model.warningColor)
-    if (model.warningStatus) {
-        mediaPlayer.start()
-    }
+fun IndicatorView(color: Color) {
+    Box(
+        modifier = Modifier
+            .padding(10.dp)
+            .size(25.dp)
+            .clip(shape = RoundedCornerShape(50))
+            .background(color)
+    )
 }
 
+// if recognize 5 symbols -> green color
 @Composable
-fun IndicatorView(color: Color) {
-    Row(
-        horizontalArrangement = Arrangement.End,
-        verticalAlignment = Alignment.Bottom
-    ) {
-        Box(
-            modifier = Modifier
-                .padding(10.dp)
-                .size(20.dp)
-                .clip(shape = RoundedCornerShape(50))
-                .background(color)
-        )
+fun WarningStatus(model: CameraPreviewModel, mediaPlayer: MediaPlayer) {
+    if (model.warningStatus && !model.soundMuted) { // => play warning
+        mediaPlayer.start()
+    } else { // => stop play warning
+        mediaPlayer.pause()
     }
 }
 

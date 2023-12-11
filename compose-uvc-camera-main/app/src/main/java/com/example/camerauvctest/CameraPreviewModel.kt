@@ -14,10 +14,12 @@ class CameraPreviewModel: ViewModel() {
     //settings
     private val successRecognitionColor = Color.Green
     private val failedRecognitionColor = Color.Red
+    private val averageWarningStatus = AverageWarningStatus()
     val warningSound = R.raw.warning_sound
 
     var imageData by mutableStateOf(ByteArray(0))
     var warningStatus by mutableStateOf(false)
+    var soundMuted by mutableStateOf(false)
     var recognitionStatus = false
     val warningColor: Color
         get() =
@@ -26,4 +28,18 @@ class CameraPreviewModel: ViewModel() {
             } else {
                 failedRecognitionColor
             }
+    val soundIcon: Int
+        get() =
+            if (soundMuted) {
+                R.drawable.sound_mute_icon
+            } else {
+                R.drawable.sound_icon
+            }
+}
+
+internal class AverageWarningStatus {
+    private val maxSetsCount = 10
+    private val minOccurrencesPercent = 0.5
+
+    private val arrayStatus: ArrayList<Boolean> = arrayListOf<Boolean>()
 }

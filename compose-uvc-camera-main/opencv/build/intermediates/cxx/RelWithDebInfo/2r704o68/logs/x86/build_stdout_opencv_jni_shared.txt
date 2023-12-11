@@ -1,0 +1,2 @@
+ninja: Entering directory `/Users/antonrasoha/Documents/Work/android/uvcCameraTest/compose-uvc-camera-main/opencv/.cxx/RelWithDebInfo/2r704o68/x86'
+ninja: no work to do.

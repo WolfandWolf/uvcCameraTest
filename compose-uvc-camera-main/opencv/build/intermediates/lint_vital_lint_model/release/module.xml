@@ -1,0 +1,19 @@
+<lint-module
+    format="1"
+    dir="/Users/antonrasoha/Documents/Work/android/uvcCameraTest/compose-uvc-camera-main/opencv"
+    name=":opencv"
+    type="LIBRARY"
+    maven="CameraUVCTest:opencv:"
+    agpVersion="8.2.0"
+    buildFolder="build"
+    bootClassPath="/Users/antonrasoha/Library/Android/sdk/platforms/android-26/android.jar:/Users/antonrasoha/Library/Android/sdk/build-tools/34.0.0/core-lambda-stubs.jar"
+    javaSourceLevel="1.8"
+    compileTarget="android-26"
+    neverShrinking="true">
+  <lintOptions
+      abortOnError="true"
+      absolutePaths="true"
+      checkReleaseBuilds="true"
+      explainIssues="true"/>
+  <variant name="release"/>
+</lint-module>
