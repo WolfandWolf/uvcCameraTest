@@ -11,6 +11,7 @@ import android.graphics.Bitmap
 import android.media.MediaPlayer
 import android.os.Build
 import android.os.Bundle
+import android.os.CountDownTimer
 import android.os.Environment
 import android.os.Handler
 import android.os.Looper
@@ -219,7 +220,9 @@ fun MyApp() {
     OpenCVLoader.initDebug()
 
     val cameraClient = rememberCameraClient(context)
-    val mediaPlayer = MediaPlayer.create(context, model.warningSound)
+    val mediaPlayer = remember {
+        MediaPlayer.create(context, model.warningSound)
+    }
     mediaPlayer.isLooping = true
 
     Column(
@@ -324,13 +327,27 @@ fun IndicatorView(color: Color) {
     )
 }
 
-// if recognize 5 symbols -> green color
 @Composable
 fun WarningStatus(model: CameraPreviewModel, mediaPlayer: MediaPlayer) {
-    if (model.warningStatus && !model.soundMuted) { // => play warning
+    if (model.warningStatus && !model.soundMuted && !model.isWarningPlaying) {
+        // start to play warning
         mediaPlayer.start()
-    } else { // => stop play warning
+        model.isWarningPlaying = true
+    } else if (!model.warningStatus && model.isWarningPlaying && !model.isTimerEnded && !model.isWarningExtended && !model.soundMuted) {
+        // start extended time to play warning
+        model.isWarningExtended = true
+        object : CountDownTimer(model.warningDuration * 1000, 1000) {
+            override fun onTick(p0: Long) {}
+            override fun onFinish() {
+                model.isTimerEnded = true
+            }
+        }.start()
+    } else if (!model.warningStatus && model.isWarningExtended && model.isTimerEnded || model.soundMuted) {
+        // stop player
         mediaPlayer.pause()
+        model.isWarningPlaying = false
+        model.isWarningExtended = false
+        model.isTimerEnded = false
     }
 }
 
